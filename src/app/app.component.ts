@@ -62,7 +62,7 @@ export class AppComponent implements AfterViewInit {
     const osm = L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png");
     osm.addTo(this.map);
 
-    let data  = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
+    let data = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
 
     // Create a GeoJSON layer and add it to the map
     const geoJsonLayer = L.geoJson(data, {style: this.style}).addTo(this.map);
@@ -72,5 +72,14 @@ export class AppComponent implements AfterViewInit {
 
     // Use the fitBounds method to zoom to Switzerland
     this.map.fitBounds(bounds);
+
+    const markers = L.markerClusterGroup();
+    markers.addLayer(L.marker([47.3769, 8.5417]));
+    markers.addLayer(L.marker([47.2769, 9.4417]));
+    markers.addLayer(L.marker([47.4769, 9.6417]));
+    markers.addLayer(L.marker([46.5197, 8.5417]));
+    markers.addLayer(L.marker([46.4197, 8.5417]));
+    this.map.addLayer(markers);
+
   }
 }
