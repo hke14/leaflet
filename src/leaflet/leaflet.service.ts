@@ -8,7 +8,7 @@ import {Feature} from "geojson";
 })
 export class LeafletService {
 
-  private map?: L.Map;
+  // private map?: L.Map;
 
   constructor() { }
 
@@ -16,17 +16,17 @@ export class LeafletService {
     return L.map(id, options);
   }
 
-  addMarker(coords: L.LatLngExpression, options?: L.MarkerOptions): L.Marker | undefined{
-    if(this.map) {
-      return L.marker(coords, options).addTo(this.map);
-    }
-    return undefined;
-  }
+  // addMarker(coords: L.LatLngExpression, options?: L.MarkerOptions): L.Marker | undefined{
+    // if(this.map) {
+    //   return L.marker(coords, options).addTo(this.map);
+    // }
+    // return undefined;
+  // }
 
-  tileLayer(layer: string, tileLayerOptions: TileLayerOptions) {
-    return new L.TileLayer(layer,
-    tileLayerOptions);
-  }
+  // tileLayer(layer: string, tileLayerOptions: TileLayerOptions) {
+  //   return new L.TileLayer(layer,
+  //   tileLayerOptions);
+  // }
 
   // zoomToCountry(map: L.Map, countryName: string): void {
   //   fetch('/world.json')
