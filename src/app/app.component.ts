@@ -43,43 +43,34 @@ export class AppComponent implements AfterViewInit {
 
   style(feature: any) {
     return {
-      fillColor: '#BD0026',
-      weight: 2,
-      opacity: 1,
-      color: 'white',
+      // fillColor: '#BD0026',
+      weight: 5,
+      opacity: 3,
+      color: '#F60',
       dashArray: '3',
-      fillOpacity: 0.7
+      stroke: true,
+      fillOpacity: 0,
     };
   }
 
   async initMap() {
     this.map = this.leafletService.initMap('map', {
       center: [46.8131873, 8.22421],
-      zoom: 4
+      zoom: 17
     });
 
-    // const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
     const osm = L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png");
     osm.addTo(this.map);
 
-    const markers = L.markerClusterGroup();
-
-
     let data  = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
-    debugger
-    L.geoJson(data, {style: this.style}).addTo(this.map);
 
+    // Create a GeoJSON layer and add it to the map
+    const geoJsonLayer = L.geoJson(data, {style: this.style}).addTo(this.map);
 
-    markers.addLayer(L.marker([47.3769, 8.5417]));
-    markers.addLayer(L.marker([47.2769, 9.4417]));
-    markers.addLayer(L.marker([47.4769, 9.6417]));
-    // add more markers here...
+    // Get the bounds of the GeoJSON layer
+    const bounds = geoJsonLayer.getBounds();
 
-    markers.addLayer(L.marker([46.5197, 8.5417]));
-    markers.addLayer(L.marker([46.4197, 8.5417]));
-
-
-    this.map.addLayer(markers);
-
+    // Use the fitBounds method to zoom to Switzerland
+    this.map.fitBounds(bounds);
   }
 }
