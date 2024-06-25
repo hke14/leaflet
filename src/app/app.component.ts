@@ -3,6 +3,7 @@ import {RouterOutlet} from '@angular/router';
 import * as L from 'leaflet';
 import {LeafletService} from "../leaflet/leaflet.service";
 import 'leaflet.markercluster';
+import {orders} from "./orders";
 
 // import * as j from '../assets/switzerland.geojson';
 
@@ -74,11 +75,9 @@ export class AppComponent implements AfterViewInit {
     this.map.fitBounds(bounds);
 
     const markers = L.markerClusterGroup();
-    markers.addLayer(L.marker([47.3769, 8.5417]));
-    markers.addLayer(L.marker([47.2769, 9.4417]));
-    markers.addLayer(L.marker([47.4769, 9.6417]));
-    markers.addLayer(L.marker([46.5197, 8.5417]));
-    markers.addLayer(L.marker([46.4197, 8.5417]));
+    orders.forEach((o) => {
+      markers.addLayer(L.marker([o.LATITUDE, o.LONGITUDE]));
+    });
     this.map.addLayer(markers);
 
   }
