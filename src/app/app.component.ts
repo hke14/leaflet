@@ -49,7 +49,7 @@ export class AppComponent implements AfterViewInit {
       color: '#F60',
       dashArray: '3',
       stroke: true,
-      fillOpacity: 0,
+      fillOpacity: 0
     };
   }
 
@@ -73,12 +73,19 @@ export class AppComponent implements AfterViewInit {
     // Use the fitBounds method to zoom to Switzerland
     this.map.fitBounds(bounds);
 
+    const myIcon = L.icon({
+      iconUrl: 'assets/migrospin.png',
+      iconSize: [30, 30], // size of the icon
+      iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+      popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
+
     const markers = L.markerClusterGroup();
-    markers.addLayer(L.marker([47.3769, 8.5417]));
-    markers.addLayer(L.marker([47.2769, 9.4417]));
-    markers.addLayer(L.marker([47.4769, 9.6417]));
-    markers.addLayer(L.marker([46.5197, 8.5417]));
-    markers.addLayer(L.marker([46.4197, 8.5417]));
+    markers.addLayer(L.marker([47.3769, 8.5417], {icon: myIcon}));
+    markers.addLayer(L.marker([47.2769, 9.4417], {icon: myIcon}));
+    markers.addLayer(L.marker([47.4769, 9.6417], {icon: myIcon}));
+    markers.addLayer(L.marker([46.5197, 8.5417], {icon: myIcon}));
+    markers.addLayer(L.marker([46.4197, 8.5417], {icon: myIcon}));
     this.map.addLayer(markers);
 
   }
