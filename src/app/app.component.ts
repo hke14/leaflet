@@ -4,6 +4,8 @@ import * as L from 'leaflet';
 import {LeafletService} from "../leaflet/leaflet.service";
 import 'leaflet.markercluster';
 import {orders} from "./orders";
+import { HttpClient } from '@angular/common/http';
+import {Feature} from "geojson";
 
 // import * as j from '../assets/switzerland.geojson';
 
@@ -18,7 +20,7 @@ import {orders} from "./orders";
 export class AppComponent implements AfterViewInit {
   private map: L.Map;
 
-  constructor(private leafletService: LeafletService) {
+  constructor(private leafletService: LeafletService, private http: HttpClient) {
   }
 
   ngAfterViewInit(): void {
@@ -64,6 +66,12 @@ export class AppComponent implements AfterViewInit {
     osm.addTo(this.map);
 
     let data = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
+
+    const geojsonPath = '/assets/cantons.geojson'; // Path to your local GeoJSON file
+
+    this.http.get(geojsonPath).subscribe((data: any) => {
+      L.geoJSON(data).addTo(this.map!);
+    }, err => console.error(err));
 
     // Create a GeoJSON layer and add it to the map
     const geoJsonLayer = L.geoJson(data, {style: this.style}).addTo(this.map);
