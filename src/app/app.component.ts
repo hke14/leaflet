@@ -5,7 +5,7 @@ import {LeafletService} from "../leaflet/leaflet.service";
 import 'leaflet.markercluster';
 import {cantons} from './cantons';
 import {orders} from "./orders";
-import {booleanPointInPolygon, point, polygon} from '@turf/turf';
+import {booleanPointInPolygon, multiPolygon, point, polygon} from '@turf/turf';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +19,7 @@ export class AppComponent implements AfterViewInit {
   private map: L.Map;
 
   constructor(private leafletService: LeafletService) {
+    this.style = this.style.bind(this);
   }
 
   ngAfterViewInit(): void {
@@ -32,25 +33,26 @@ export class AppComponent implements AfterViewInit {
   }
 
   getColor(d: number) {
-    return d > 1000 ? '#800026' :
-      d > 500 ? '#BD0026' :
-        d > 200 ? '#E31A1C' :
-          d > 100 ? '#FC4E2A' :
-            d > 50 ? '#FD8D3C' :
-              d > 20 ? '#FEB24C' :
-                d > 10 ? '#FED976' :
+    return d > 6000 ? '#800026' :
+      d > 4000 ? '#BD0026' :
+        d > 2000 ? '#E31A1C' :
+          d > 1000 ? '#FC4E2A' :
+            d > 500 ? '#FD8D3C' :
+              d > 200 ? '#FEB24C' :
+                d > 100 ? '#FED976' :
                   '#FFEDA0';
   }
 
   style(feature: any) {
+    let color = this.getColor(feature.properties.density);
     return {
-      fillColor: this.getColor(feature.properties.density),
+      fillColor: color,
       weight: 5,
       opacity: 3,
-      color: '#F60',
+      color: '#473a35',
       dashArray: '3',
       stroke: true,
-      fillOpacity: 0
+      fillOpacity: 0.7
     };
   }
 
@@ -66,17 +68,16 @@ export class AppComponent implements AfterViewInit {
     let orangeBorders = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
     // let dataCantons = await this.fetchJSON('https://gist.githubusercontent.com/cmutel/a2e0f2e48278deeedf19846c39cee4da/raw/c7469bb06f1e83c3e4f3c81b87f127f787685db0/cantons.geojson');
 
-    orders.forEach((o) =>{
-      cantons.features.every((f: any) => {
-        console.log(f.geometry.coordinates[0][0]);
-        let insidePolygon = this.isInsidePolygon(o.LATITUDE, o.LONGITUDE, f.geometry.coordinates[0][0]);
+    for (const o of orders) {
+      for (const f of cantons.features) {
+        let insidePolygon = this.isInsidePolygon(o.LATITUDE, o.LONGITUDE, f);
         if (insidePolygon) {
           f.properties.density = f.properties.density ? f.properties.density + 1 : 1;
-          return false;
+          break
         }
-        return true;
-      })
-    });
+        f.properties.density = f.properties.density ? f.properties.density : 0;
+      }
+    }
 
     L.geoJson(cantons, {style: this.style}).addTo(this.map);
 
@@ -104,11 +105,21 @@ export class AppComponent implements AfterViewInit {
 
   }
 
-  isInsidePolygon(lat: number, lng: number, polygonCoords: any) {
+  isInsidePolygon(lat: number, lng: number, f: any) {
+    console.log(f)
     if (lat && lng) {
       const pt = point([lng, lat]);
-      const poly = polygon(polygonCoords);
-      return booleanPointInPolygon(pt, poly)
+      let poly;
+      if (f.geometry.type === 'MultiPolygon') {
+        const multiPoly = multiPolygon(f.geometry.coordinates);
+        return multiPoly.geometry.coordinates.some(polygonCoords => {
+          const poly = polygon(polygonCoords);
+          return booleanPointInPolygon(pt, poly);
+        });
+      } else {
+        poly = polygon(f.geometry.coordinates);
+        return booleanPointInPolygon(pt, poly)
+      }
     } else {
       return false;
     }
