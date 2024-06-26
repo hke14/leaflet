@@ -3,12 +3,8 @@ import {RouterOutlet} from '@angular/router';
 import * as L from 'leaflet';
 import {LeafletService} from "../leaflet/leaflet.service";
 import 'leaflet.markercluster';
+import { cantons } from './cantons';
 import {orders} from "./orders";
-import { HttpClient } from '@angular/common/http';
-import {Feature} from "geojson";
-
-// import * as j from '../assets/switzerland.geojson';
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -20,7 +16,7 @@ import {Feature} from "geojson";
 export class AppComponent implements AfterViewInit {
   private map: L.Map;
 
-  constructor(private leafletService: LeafletService, private http: HttpClient) {
+  constructor(private leafletService: LeafletService) {
   }
 
   ngAfterViewInit(): void {
@@ -66,15 +62,13 @@ export class AppComponent implements AfterViewInit {
     osm.addTo(this.map);
 
     let data = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
+    // let dataCantons = await this.fetchJSON('https://gist.githubusercontent.com/cmutel/a2e0f2e48278deeedf19846c39cee4da/raw/c7469bb06f1e83c3e4f3c81b87f127f787685db0/cantons.geojson');
 
-    const geojsonPath = '/assets/cantons.geojson'; // Path to your local GeoJSON file
-
-    this.http.get(geojsonPath).subscribe((data: any) => {
-      L.geoJSON(data).addTo(this.map!);
-    }, err => console.error(err));
+    L.geoJSON(cantons).addTo(this.map!);
 
     // Create a GeoJSON layer and add it to the map
     const geoJsonLayer = L.geoJson(data, {style: this.style}).addTo(this.map);
+    // L.geoJson(data, {style: this.style}).addTo(this.map);
 
     // Get the bounds of the GeoJSON layer
     const bounds = geoJsonLayer.getBounds();
