@@ -97,9 +97,19 @@ export class AppComponent implements AfterViewInit {
 
 
     // Adding orders
+    var greenIcon = L.icon({
+      iconUrl: 'https://www.iconpacks.net/icons/1/free-pin-icon-48-thumb.png',
+      // shadowUrl: 'https://www.iconpacks.net/icons/1/free-pin-icon-48-thumb.png',
+
+      iconSize:     [38, 95], // size of the icon
+      // shadowSize:   [50, 64], // size of the shadow
+      iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+      // shadowAnchor: [4, 62],  // the same for the shadow
+      popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
     const markers = L.markerClusterGroup();
     orders.forEach((o) => {
-      markers.addLayer(L.marker([o.LATITUDE, o.LONGITUDE]));
+      markers.addLayer(L.marker([o.LATITUDE, o.LONGITUDE], {icon: greenIcon}));
     });
     this.map.addLayer(markers);
 
