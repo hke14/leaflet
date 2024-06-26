@@ -3,8 +3,10 @@ import {RouterOutlet} from '@angular/router';
 import * as L from 'leaflet';
 import {LeafletService} from "../leaflet/leaflet.service";
 import 'leaflet.markercluster';
-import { cantons } from './cantons';
+import {cantons} from './cantons';
 import {orders} from "./orders";
+import {booleanPointInPolygon, point, polygon} from '@turf/turf';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -42,7 +44,7 @@ export class AppComponent implements AfterViewInit {
 
   style(feature: any) {
     return {
-      // fillColor: '#BD0026',
+      fillColor: this.getColor(feature.properties.density),
       weight: 5,
       opacity: 3,
       color: '#F60',
@@ -61,33 +63,54 @@ export class AppComponent implements AfterViewInit {
     const osm = L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png");
     osm.addTo(this.map);
 
-    let data = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
+    let orangeBorders = await this.fetchJSON('https://raw.githubusercontent.com/ZHB/switzerland-geojson/master/country/switzerland.geojson');
     // let dataCantons = await this.fetchJSON('https://gist.githubusercontent.com/cmutel/a2e0f2e48278deeedf19846c39cee4da/raw/c7469bb06f1e83c3e4f3c81b87f127f787685db0/cantons.geojson');
 
-    L.geoJSON(cantons).addTo(this.map!);
-
-    // Create a GeoJSON layer and add it to the map
-    const geoJsonLayer = L.geoJson(data, {style: this.style}).addTo(this.map);
-    // L.geoJson(data, {style: this.style}).addTo(this.map);
-
-    // Get the bounds of the GeoJSON layer
-    const bounds = geoJsonLayer.getBounds();
-
-    // Use the fitBounds method to zoom to Switzerland
-    this.map.fitBounds(bounds);
-
-    const myIcon = L.icon({
-      iconUrl: 'assets/migrospin.png',
-      iconSize: [30, 30], // size of the icon
-      iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-      popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    orders.forEach((o) =>{
+      cantons.features.every((f: any) => {
+        console.log(f.geometry.coordinates[0][0]);
+        let insidePolygon = this.isInsidePolygon(o.LATITUDE, o.LONGITUDE, f.geometry.coordinates[0][0]);
+        if (insidePolygon) {
+          f.properties.density = f.properties.density ? f.properties.density + 1 : 1;
+          return false;
+        }
+        return true;
+      })
     });
 
+    L.geoJson(cantons, {style: this.style}).addTo(this.map);
+
+    // Create a GeoJSON layer and add it to the map
+    const geoJsonLayer = L.geoJson(orangeBorders, {style: this.style}).addTo(this.map);
+
+    // Use the fitBounds method to zoom to Switzerland
+    const bounds = geoJsonLayer.getBounds();
+    this.map.fitBounds(bounds);
+
+    // const myIcon = L.icon({
+    //   iconUrl: 'assets/migrospin.png',
+    //   iconSize: [30, 30], // size of the icon
+    //   iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    //   popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    // });
+
+
+    // Adding orders
     const markers = L.markerClusterGroup();
     orders.forEach((o) => {
       markers.addLayer(L.marker([o.LATITUDE, o.LONGITUDE]));
     });
     this.map.addLayer(markers);
 
+  }
+
+  isInsidePolygon(lat: number, lng: number, polygonCoords: any) {
+    if (lat && lng) {
+      const pt = point([lng, lat]);
+      const poly = polygon(polygonCoords);
+      return booleanPointInPolygon(pt, poly)
+    } else {
+      return false;
+    }
   }
 }
